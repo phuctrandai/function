@@ -6,7 +6,7 @@
       "type": "serviceBusTrigger",
       "direction": "in",
       "queueName": "notificationqueue",
-      "connection": ""
+      "connection": "Endpoint=sb://udacitylearning.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=cBDsGLWjlp/4tqwVj9pZkgX2TMzRFm5tx+ASbIdehkY="
     }
   ]
 }

@@ -7,18 +7,18 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 # Database connection details
-db_host = 'udacitylearning-new.postgres.database.azure.com:5432'
-db_name = 'udacitylearning'
-db_user = 'udacitylearning@udacitylearning'
+db_host = 'udacitylearning.postgres.database.azure.com:5432'
+db_name = 'techconfdb'
+db_user = 'phucadmin@udacitylearning'
 db_password = 'Abcde12345-+'
 
-ADMIN_EMAIL_ADDRESS = ''
-SENDGRID_API_KEY = ''
+ADMIN_EMAIL_ADDRESS = 'tridp.it@gmail.com'
+SENDGRID_API_KEY = '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'
 
 
 def main(msg: func.ServiceBusMessage):
 
-    notification_id = int(msg.get_body().decode('utf-8'))
+    notification_id = str(msg.get_body().decode('utf-8'))
     logging.info('Python ServiceBus queue trigger processed message: %s', notification_id)
 
     # TODO: Get connection to database
@@ -27,26 +27,28 @@ def main(msg: func.ServiceBusMessage):
 
     try:
         # TODO: Get notification message and subject from database using the notification_id
-        query = "SELECT subject, message FROM notifications WHERE id = %s;"
+        query = "SELECT subject, message FROM notification WHERE id = %s;"
         cursor.execute(query, (notification_id,))
         result = cursor.fetchone()
-        subject, message = result
+        subject = result[0]
+        message = result[1]
 
         # TODO: Get attendees email and name
-        query = "SELECT email, first_name FROM attendees;"
+        query = "SELECT email, first_name FROM attendee;"
         cursor.execute(query)
         attendees = cursor.fetchall()
 
         # TODO: Loop through each attendee and send an email with a personalized subject
         for attendee in attendees:
-            email, first_name = attendee
+            first_name = attendee[0]
+            email = attendee[1]
             personalized_subject = subject.replace('{{first_name}}', first_name)
             personalized_message = message.replace('{{first_name}}', first_name)
 
         send_email(email, personalized_subject, personalized_message)
 
         # TODO: Update the notification table by setting the completed date and updating the status with the total number of attendees notified
-        query = "UPDATE notifications SET status = %s, completed_date = %s WHERE id = %s;"
+        query = "UPDATE notification SET status = %s, completed_date = %s WHERE id = %s;"
         cursor.execute(query, ('Notified {} attendees'.format(len(attendees)), datetime.utcnow(), notification_id,))
 
     except (Exception, psycopg2.DatabaseError) as error:
