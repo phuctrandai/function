@@ -6,26 +6,23 @@ import psycopg2
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-# Database connection details
-db_host = 'udacitylearning.postgres.database.azure.com:5432'
-db_name = 'techconfdb'
-db_user = 'phucadmin@udacitylearning'
-db_password = 'Abcde12345-+'
-
-ADMIN_EMAIL_ADDRESS = 'tridp.it@gmail.com'
-SENDGRID_API_KEY = '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'
-
-
 def main(msg: func.ServiceBusMessage):
 
     notification_id = str(msg.get_body().decode('utf-8'))
     logging.info('Python ServiceBus queue trigger processed message: %s', notification_id)
 
-    # TODO: Get connection to database
-    conn = psycopg2.connect(host=db_host, dbname=db_name, user=db_user, password=db_password)
-    cursor = conn.cursor()
-
     try:
+        # TODO: Get connection to database
+        connection = psycopg2.connect(
+            user="phucadmin@udacitylearning",
+            password="Abcde12345-+",
+            host="udacitylearning.postgres.database.azure.com",
+            port="5432",
+            database="techconfdb"
+        )
+
+        cursor = connection.cursor()
+
         # TODO: Get notification message and subject from database using the notification_id
         query = "SELECT subject, message FROM notification WHERE id = %s;"
         cursor.execute(query, (notification_id,))
@@ -55,12 +52,15 @@ def main(msg: func.ServiceBusMessage):
         logging.error(error)
     finally:
         # TODO: Close connection
-        conn.commit()
+        connection.commit()
         cursor.close()
-        conn.close()
+        connection.close()
 
 
 def send_email(email, subject, body):
+    ADMIN_EMAIL_ADDRESS = 'tridp.it@gmail.com'
+    SENDGRID_API_KEY = ''
+    
     message = Mail(
         from_email=ADMIN_EMAIL_ADDRESS,
         to_emails=email,
